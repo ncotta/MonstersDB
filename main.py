@@ -1,5 +1,4 @@
 from pymongo import MongoClient
-from pprint import pprint
 from dotenv import load_dotenv
 import os
 
@@ -9,8 +8,7 @@ PASSWORD = os.getenv("PASSWORD")
 connection = f"mongodb+srv://nikcotta:{PASSWORD}@cluster0.cwjfqao.mongodb.net/?retryWrites=true&w=majority"
 client = MongoClient(connection)
 
-db = client["monsters"]
-collection = db["monsters"]
+collection = client["monsters"]["monsters"]
 
 # FIXME: id increment
 
@@ -28,9 +26,10 @@ def insert(_id, name, difficulty, stats, dispo, desc):
 
     try:
         collection.insert_one(post)
+        print(f"{name} data added")
     except Exception as e:
         print(e)
-        print("Could not insert")
+        print(f"Could not add {name}")
 
 
 def find(category, query, limit=1):
@@ -40,9 +39,13 @@ def find(category, query, limit=1):
 
     # results = collection.find_one({"name": "Tim"})
     # print(results)
-    results = collection.find({category: query})
-    for i in range(limit):
-        print(results[i])
+    try:
+        results = collection.find({category: query})
+        print(f"Scanned {getNumMonsters()} entries and found: ")
+        for i in range(limit):
+            print(results[i])
+    except IndexError:
+        print("Nothing. Could not find specified monster")
 
 
 def delete():
@@ -51,6 +54,19 @@ def delete():
     pass  # FIXME
 
 
+def delete_all():
+    response = input("Are you sure you want to delete every entry? (y/n): ")
+    if response.strip() == "y":
+        collection.delete_many({})
+    else:
+        print("Deletion cancelled")
+
+
 def update():
     # results = collection.update_one({"_id":0}, {"$set": {"name": "tim" }})
     pass  # FIXME
+
+
+if __name__ == '__main__':
+    find("_id", 1)
+
